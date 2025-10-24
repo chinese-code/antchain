@@ -1,0 +1,19 @@
+[project]
+name = "datastream"
+version = "0.0.1"
+description = "一个函数式编程风格的数据流式处理管道库，支持流式数据的多种处理操作"
+authors = [
+    {name = "涂铭鉴",email = "tumingjian@qq.com"}
+]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.0.0"
+pytest-cov = "^4.0.0"
