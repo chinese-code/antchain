@@ -1,9 +1,9 @@
 [project]
 name = "antchain"
-version = "0.0.1"
+version = "0.0.2"
 description = "一个函数式编程风格的数据流式处理管道库，支持流式数据的多种处理操作"
 authors = [
-    {name = "涂铭鉴", email = "tumingjian@qq.com"}
+    {name = "tumingjian", email = "tumingjian@qq.com"}
 ]
 readme = "README.md"
 license = {text = "MIT"}
@@ -24,9 +24,9 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/your-username/antchain"
-Repository = "https://github.com/your-username/antchain.git"
-"Bug Tracker" = "https://github.com/your-username/antchain/issues"
+Homepage = "https://github.com/tumingjian/antchain"
+Repository = "https://github.com/tumingjian/antchain.git"
+"Bug Tracker" = "https://github.com/tumingjian/antchain/issues"
 
 # 添加示例文件作为包数据
 [project.package-data]

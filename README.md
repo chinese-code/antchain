@@ -123,6 +123,15 @@ stream = Start() | init_data | (DATA * join_data_func) | LIST
 stream = Start() | init_data | (DATA ** join_data_func) | LIST
 ```
 
+### 常用方法:
+#### - PEEK: 用于查看数据,会打印当前数据
+#### - LIST: 将结果转换为列表
+#### - SET: 将结果转换为集合
+#### - TUPLE: 将结果转换为元组
+#### - FIRST: 获取结果中的第一个元素
+#### - LAST: 获取结果中的最后一个元素
+#### - NON: 用于过滤数据,返回非None数据
+#### - COUNT: 统计数量
 ## 使用示例
 
 ### 1. 基本数据处理
