@@ -5,9 +5,7 @@
 """
 
 import random
-import re
-from antchain import DATA, Start
-from antchain.core import COUNT, SET
+from antchain import DATA, Start, COUNT, SET
 
 
 def init_user():
@@ -70,6 +68,7 @@ def init_vip():
     ]
 
 
+
 # 开始标记
 start = Start()
 # 数据处理Stream
@@ -80,7 +79,9 @@ chain = (
     | (DATA > add_address)  # 单条循环添加address字段
     | (DATA > modify_age)  # 单条循环修改age字段
     | (DATA >> add_status)  # 添加状态字段
-    | (DATA * last_active_time)  # 查询出用户活跃时间并关联到用户信息中,每次循环处理2条数据根据ID匹配
+    | (
+        DATA * last_active_time
+    )  # 查询出用户活跃时间并关联到用户信息中,每次循环处理2条数据根据ID匹配
     | (DATA + init_vip)  # 添加vip用户到列表中
 )
 
@@ -88,24 +89,17 @@ chain = (
 print(chain())
 
 # 统计总人数
-cnt=chain | COUNT
+cnt = chain | COUNT
 print("总人数: " + str(cnt()))
 
 # 查询活跃用户
-active_user=chain | (DATA -(lambda r: r["status"] == "活跃"))
+active_user = chain | (DATA - (lambda r: r["status"] == "活跃"))
 print("活跃用户: " + str(active_user()))
 
 # 获取用户ID
 ids = chain | (DATA > (lambda r: r["id"])) | SET
 print("用户ID: " + str(ids()))
 
-
-
-def max_age(rows):
-    """
-    获取最大年龄
-    """
-    return max(rows, key=lambda r: r["age"])
-max_age_user = chain | DATA >> max_age
-
+# 获取最大年龄的用户信息
+max_age_user = chain | DATA >> (lambda rows: max(rows, key=lambda r: r["age"]))
 print("最大年龄: " + str(max_age_user()))
