@@ -359,6 +359,9 @@ def collect_first(rows):
 def collect_last(rows):
     return rows[-1] if len(rows) > 0 else None
 
+def filter_none(row):
+    return row is not None
+
 
 # DEBUG 模式，打印并返回数据
 PEEK = DATA >> peek
@@ -374,3 +377,5 @@ TUPLE = DATA >> collect_tuple
 FIRST = DATA >> collect_first
 # 取最后一个
 LAST = DATA >> collect_last
+# 过滤为None的数据,也就是保留不为None的数据
+NON=DATA - filter_none

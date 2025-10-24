@@ -1,6 +1,6 @@
 import pytest
 from typing import List, Dict, Any
-from datastream.strategies import (
+from antchain.strategies import (
     ProcessingStrategy,
     SingleItemStrategy,
     BatchStrategy,
@@ -10,7 +10,7 @@ from datastream.strategies import (
     FullJoinStrategy,
     StrategyFactory,
 )
-from datastream.utils import extract_batch_size, batch_process
+from antchain.utils import extract_batch_size, batch_process
 import abc
 
 

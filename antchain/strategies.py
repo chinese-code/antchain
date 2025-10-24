@@ -42,7 +42,7 @@ class SingleItemStrategy(ProcessingStrategy):
     def process(self, prev_result: Any, *args, **kwargs) -> Any:
         """处理单条数据"""
         if isinstance(prev_result, list):
-            return [self.func(item) for item in prev_result]
+           return [self.func(item) for item in prev_result]
         else:
             return self.func(prev_result)
 
@@ -75,10 +75,14 @@ class FilterStrategy(ProcessingStrategy):
     def process(self, prev_result: Any, *args, **kwargs) -> Any:
         """过滤数据"""
         if isinstance(prev_result, list):
-            return [item for item in prev_result if self.func(item)]
+            data = list()
+            for item in prev_result:
+                if self.func(item):
+                    data.append(item)
+            return data
         else:
             # 单条数据，如果返回True则保留，否则返回空列表
-            return prev_result if self.func(prev_result) else []
+            return prev_result if self.func(prev_result) else None
 
 
 class MergeStrategy(ProcessingStrategy):

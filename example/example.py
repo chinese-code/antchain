@@ -4,7 +4,7 @@
 展示如何使用stream包中的各种操作符和功能。
 """
 
-from datastream import DATA, Start
+from antchain import DATA, Start
 
 
 def init_data():

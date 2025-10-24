@@ -54,6 +54,8 @@ cover/
 # Translations
 *.mo
 *.pot
+# 发布到正式 PyPI
+# 发布到正式 PyPI
 
 # Django stuff:
 *.log

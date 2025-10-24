@@ -9,6 +9,17 @@
 - Stream: 数据流核心类，支持链式调用
 - StreamStart: 数据流起始类，用于启动链式调用
 
+常用方法:
+- PEEK: 用于查看数据,会打印当前数据
+- LIST: 将结果转换为列表
+- SET: 将结果转换为集合
+- TUPLE: 将结果转换为元组
+- FIRST: 获取结果中的第一个元素
+- LAST: 获取结果中的最后一个元素
+- NON: 用于过滤数据,返回非None数据
+- COUNT: 统计数量
+
+
 使用示例：
     from stream import DATA, StreamStart
 
@@ -25,8 +36,8 @@
     result = stream_start | init | (DATA > process_item) | (DATA - filter_item)
 """
 
-from .core import Start, DATA, PEEK, LIST, SET, COUNT, TUPLE, FIRST, LAST
+from .core import Start, DATA, PEEK, LIST, SET, COUNT, TUPLE, FIRST, LAST,NON
 
-__all__ = ["Start", "DATA", "PEEK", "LIST", "SET", "COUNT", "TUPLE", "FIRST", "LAST"]
+__all__ = ["Start", "DATA", "PEEK", "LIST", "SET", "COUNT", "TUPLE", "FIRST", "LAST","NON"]
 __version__ = "0.0.1"
 __author__ = "Developer"

@@ -1,6 +1,6 @@
 import pytest
 from typing import List, Dict, Any
-from datastream.core import (
+from antchain.core import (
     OPMode,
     Stream,
     Start,
@@ -13,7 +13,7 @@ from datastream.core import (
     FIRST,
     LAST,
 )
-from datastream.strategies import StrategyFactory
+from antchain.strategies import StrategyFactory
 import inspect
 
 
