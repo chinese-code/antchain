@@ -342,7 +342,7 @@ class TestStream:
 
         with pytest.raises(TypeError):
             # 传递一个不可调用的对象
-            stream | NotCallable()
+            stream | NotCallable()  # pyright: ignore[reportUnusedExpression]
 
     # 新增测试用例以提高覆盖率
     def test_stream_or_with_different_strategies(self):
@@ -408,7 +408,7 @@ class TestStart:
 
         with pytest.raises(TypeError):
             # 传递一个不可调用的对象
-            start | NotCallable()
+            start | NotCallable()  # pyright: ignore[reportUnusedExpression]
 
 
 class TestBuiltInCollectors:
