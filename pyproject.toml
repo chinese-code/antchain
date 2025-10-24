@@ -10,7 +10,7 @@ license = {text = "MIT"}
 requires-python = ">=3.10"
 dependencies = [
 ]
-keywords = ["data-processing", "stream-processing", "functional-programming", "pipeline", "data-pipeline"]
+keywords = ["ant-chain","antchain","data-processing", "stream-processing","data-chain"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -24,9 +24,9 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/tumingjian/antchain"
-Repository = "https://github.com/tumingjian/antchain.git"
-"Bug Tracker" = "https://github.com/tumingjian/antchain/issues"
+Homepage = "https://github.com/chinese-code/antchain"
+Repository = "https://github.com/chinese-code/antchain.git"
+"Bug Tracker" = "https://github.com/chinese-code/antchain/issues"
 
 # 添加示例文件作为包数据
 [project.package-data]
