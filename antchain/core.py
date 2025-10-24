@@ -45,34 +45,29 @@ class OPMode:
                 param = sig.parameters["stream_join"]
                 if param.default != inspect.Parameter.empty and callable(param.default):
                     condition_func = param.default
-        except (ValueError, TypeError):
-            pass
+        except (ValueError, TypeError) as e:
+            raise e
 
         # 执行函数获取数据，如果函数可以接受参数则传递prev_result
         try:
+            # 检查是否有非默认参数
+            has_required_params = any(
+                param.default == inspect.Parameter.empty
+                for param in sig.parameters.values()
+                if param.name not in ["stream_size", "stream_join"]
+            )
             # 检查函数是否可以接受参数
-            if len(sig.parameters) > 0:
-                # 检查是否有非默认参数
-                has_required_params = any(
-                    param.default == inspect.Parameter.empty
-                    for param in sig.parameters.values()
-                    if param.name not in ["stream_size", "stream_join"]
-                )
-
-                if has_required_params and prev_result is not None:
-                    data = other(prev_result)
-                elif not has_required_params:
-                    # 只有默认参数或特殊参数，可以不传参调用
-                    data = other()
-                else:
-                    # 有必需参数但没有prev_result，使用无参数调用
-                    data = other()
+            if (
+                len(sig.parameters) > 0
+                and has_required_params
+                and prev_result is not None
+            ):
+                data = other(prev_result)
             else:
                 # 函数不接受任何参数
                 data = other()
-        except (TypeError, ValueError):
-            # 如果调用失败，回退到无参数调用
-            data = other()
+        except (TypeError, ValueError) as e:
+            raise e
         return condition_func, data
 
     def _create_join_operation(

@@ -21,10 +21,10 @@ tests/
 ```
 Name                       Stmts   Miss  Cover   Missing
 --------------------------------------------------------
-datastream/__init__.py         4      0   100%
-datastream/core.py           114     26    77%   109-123, 129, 134, 169-183, 189, 194
-datastream/strategies.py     129     16    88%   33, 117, 133-141, 179, 195-203, 288
-datastream/utils.py           25      3    88%   21, 36-37
+antchain/__init__.py         4      0   100%
+antchain/core.py           110     10    91%   48-49, 63, 69-75, 100, 105, 376
+antchain/strategies.py     146      8    95%   34, 130-133, 202-205, 309
+antchain/utils.py           25      3    88%   21, 36-37
 --------------------------------------------------------
 TOTAL                        272     45    83%
 ```

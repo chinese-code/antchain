@@ -127,8 +127,8 @@ class LeftJoinStrategy(ProcessingStrategy):
                         right_data = self.data_func(prev_result)
                     else:
                         right_data = self.data_func()
-                except (ValueError, TypeError):
-                    right_data = self.data_func()
+                except (ValueError, TypeError) as e:
+                    raise e
             else:
                 right_data = self.data_func
 
@@ -199,8 +199,8 @@ class FullJoinStrategy(ProcessingStrategy):
                         right_data = self.data_func(prev_result)
                     else:
                         right_data = self.data_func()
-                except (ValueError, TypeError):
-                    right_data = self.data_func()
+                except (ValueError, TypeError) as e:
+                    raise e
             else:
                 right_data = self.data_func
 
