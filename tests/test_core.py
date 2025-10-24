@@ -288,7 +288,7 @@ class TestOPMode:
     def test_opmode_rshift_operator_with_stream_size(self):
         """测试>>操作符（带stream_size参数）"""
 
-        def process_func_with_stream_size(rows,stream_size=100):
+        def process_func_with_stream_size(rows, stream_size=100):
             print(f"处理数据: {rows}")
             return [{"processed": True}]
 
