@@ -75,14 +75,10 @@ class FilterStrategy(ProcessingStrategy):
     def process(self, prev_result: Any, *args, **kwargs) -> Any:
         """过滤数据"""
         if isinstance(prev_result, list):
-            data = list()
-            for item in prev_result:
-                if self.func(item):
-                    data.append(item)
-            return data
+            return [item for item in prev_result if self.func(item)]
         else:
             # 单条数据，如果返回True则保留，否则返回空列表
-            return prev_result if self.func(prev_result) else None
+            return prev_result if self.func(prev_result) else []
 
 
 class MergeStrategy(ProcessingStrategy):

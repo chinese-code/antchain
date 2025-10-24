@@ -53,7 +53,7 @@ def sample_join_data():
 
 
 def sample_join_data_func(stream_join=sample_join_condition):
-    """测试用的连接数据函数（带stream_j_oin参数）"""
+    """测试用的连接数据函数（带stream_join参数）"""
     return [{"id": 1, "info": "data1"}, {"id": 2, "info": "data2"}]
 
 
@@ -125,7 +125,7 @@ class TestOPMode:
 
         with pytest.raises(TypeError):
             # 传递一个不是元组也不是可调用的对象
-            DATA * NotCallable()
+            DATA * NotCallable()  # type: ignore
 
     def test_opmode_pow_operator_tuple(self):
         """测试**操作符（元组模式）"""
@@ -156,7 +156,7 @@ class TestOPMode:
 
         with pytest.raises(TypeError):
             # 传递一个不是元组也不是可调用的对象
-            DATA ** NotCallable()
+            DATA ** NotCallable()  # type: ignore
 
     # 新增测试用例以提高覆盖率
     def test_opmode_mul_operator_callable_no_stream_join(self):
