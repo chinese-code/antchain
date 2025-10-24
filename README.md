@@ -122,15 +122,8 @@ print("活跃用户: " + str(active_user()))
 ids = chain | (DATA > (lambda r: r["id"])) | SET
 print("用户ID: " + str(ids()))
 
-
-
-def max_age(rows):
-    """
-    获取最大年龄
-    """
-    return max(rows, key=lambda r: r["age"])
-max_age_user = chain | DATA >> max_age
-
+# 获取最大年龄的用户信息
+max_age_user = chain | DATA >> (lambda rows: max(rows, key=lambda r: r["age"]))
 print("最大年龄: " + str(max_age_user()))
 ```
 
