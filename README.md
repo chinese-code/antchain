@@ -178,7 +178,7 @@ result = (
 )
 
 # 左连接 - 单函数语法
-def join_data_func(stream_join=join_condition):
+def join_data_func(items,stream_join=join_condition):
     return (get_teacher_data())
     
 result = (
@@ -195,7 +195,7 @@ result = (
 )
 
 # 全连接 - 单函数语法
-def join_data_func(stream_join=join_condition):
+def join_data_func(items,stream_join=join_condition):
     return (get_teacher_data())
     
 result = (

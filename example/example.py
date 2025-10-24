@@ -19,7 +19,7 @@ def process_single_item(row):
     return {"class_id": row["id"], "student_name": "冬冬" + str(row["id"])}
 
 
-def process_batch_items(rows):
+def process_batch_items(rows, stream_size=100):
     """批量数据处理函数"""
     print(f"执行 process_batch_items（批量处理），处理列表: {rows}")
     return rows
@@ -56,10 +56,10 @@ def join_condition(data_left, data_right):
     return data_left["class_id"] == data_right["class_id"]
 
 
-def join_data_func():
+def join_data_func(rows, stream_join=join_condition):
     """返回(条件函数, 数据)元组的函数"""
     print("执行 join_data_func（单函数连接数据处理）")
-    return (join_condition, join_data())
+    return join_data()
 
 
 def main():

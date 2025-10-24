@@ -1,6 +1,18 @@
 import pytest
 from typing import List, Dict, Any
-from datastream.core import OPMode, Stream, Start, DATA, PEEK, LIST, SET, COUNT, TUPLE, FIRST, LAST
+from datastream.core import (
+    OPMode,
+    Stream,
+    Start,
+    DATA,
+    PEEK,
+    LIST,
+    SET,
+    COUNT,
+    TUPLE,
+    FIRST,
+    LAST,
+)
 from datastream.strategies import StrategyFactory
 import inspect
 
@@ -52,7 +64,7 @@ class TestOPMode:
         """测试OPMode初始化"""
         op = OPMode("test")
         assert op.mode == "test"
-        
+
         op = OPMode()
         assert op.mode is None
 
@@ -94,9 +106,10 @@ class TestOPMode:
 
     def test_opmode_mul_operator_callable(self):
         """测试*操作符（可调用模式）"""
+
         def join_func_with_param(stream_join=sample_join_condition):
             return [{"id": 1, "info": "data1"}]
-            
+
         result = DATA * join_func_with_param
         assert isinstance(result, tuple)
         assert result[0] == "left_join"
@@ -105,10 +118,11 @@ class TestOPMode:
 
     def test_opmode_mul_operator_invalid(self):
         """测试*操作符（无效参数）"""
+
         # 创建一个不可调用的对象来触发TypeError
         class NotCallable:
             pass
-            
+
         with pytest.raises(TypeError):
             # 传递一个不是元组也不是可调用的对象
             DATA * NotCallable()
@@ -123,10 +137,11 @@ class TestOPMode:
 
     def test_opmode_pow_operator_callable(self):
         """测试**操作符（可调用模式）"""
+
         def join_func_with_param(stream_join=sample_join_condition):
             return [{"id": 1, "info": "data1"}]
-            
-        result = DATA ** join_func_with_param
+
+        result = DATA**join_func_with_param
         assert isinstance(result, tuple)
         assert result[0] == "full_join"
         assert hasattr(result[1], "_extract_func")
@@ -134,10 +149,11 @@ class TestOPMode:
 
     def test_opmode_pow_operator_invalid(self):
         """测试**操作符（无效参数）"""
+
         # 创建一个不可调用的对象来触发TypeError
         class NotCallable:
             pass
-            
+
         with pytest.raises(TypeError):
             # 传递一个不是元组也不是可调用的对象
             DATA ** NotCallable()
@@ -145,9 +161,10 @@ class TestOPMode:
     # 新增测试用例以提高覆盖率
     def test_opmode_mul_operator_callable_no_stream_join(self):
         """测试*操作符（可调用模式，无stream_join参数）"""
+
         def join_func_without_param():
             return [{"id": 1, "info": "data1"}]
-            
+
         result = DATA * join_func_without_param
         assert isinstance(result, tuple)
         assert result[0] == "left_join"
@@ -156,10 +173,11 @@ class TestOPMode:
 
     def test_opmode_pow_operator_callable_no_stream_join(self):
         """测试**操作符（可调用模式，无stream_join参数）"""
+
         def join_func_without_param():
             return [{"id": 1, "info": "data1"}]
-            
-        result = DATA ** join_func_without_param
+
+        result = DATA**join_func_without_param
         assert isinstance(result, tuple)
         assert result[0] == "full_join"
         assert hasattr(result[1], "_extract_func")
@@ -167,9 +185,10 @@ class TestOPMode:
 
     def test_opmode_mul_operator_callable_stream_join_not_callable(self):
         """测试*操作符（可调用模式，stream_join参数不可调用）"""
+
         def join_func_with_non_callable_param(stream_join="not_callable"):
             return [{"id": 1, "info": "data1"}]
-            
+
         result = DATA * join_func_with_non_callable_param
         assert isinstance(result, tuple)
         assert result[0] == "left_join"
@@ -178,10 +197,11 @@ class TestOPMode:
 
     def test_opmode_pow_operator_callable_stream_join_not_callable(self):
         """测试**操作符（可调用模式，stream_join参数不可调用）"""
+
         def join_func_with_non_callable_param(stream_join="not_callable"):
             return [{"id": 1, "info": "data1"}]
-            
-        result = DATA ** join_func_with_non_callable_param
+
+        result = DATA**join_func_with_non_callable_param
         assert isinstance(result, tuple)
         assert result[0] == "full_join"
         assert hasattr(result[1], "_extract_func")
@@ -189,9 +209,10 @@ class TestOPMode:
 
     def test_opmode_mul_operator_callable_extract_condition_data_exception(self):
         """测试*操作符（可调用模式，提取条件数据时异常）"""
+
         def problematic_func():
             raise ValueError("Test exception")
-            
+
         result = DATA * problematic_func
         assert isinstance(result, tuple)
         assert result[0] == "left_join"
@@ -200,10 +221,11 @@ class TestOPMode:
 
     def test_opmode_pow_operator_callable_extract_condition_data_exception(self):
         """测试**操作符（可调用模式，提取条件数据时异常）"""
+
         def problematic_func():
             raise ValueError("Test exception")
-            
-        result = DATA ** problematic_func
+
+        result = DATA**problematic_func
         assert isinstance(result, tuple)
         assert result[0] == "full_join"
         assert hasattr(result[1], "_extract_func")
@@ -211,12 +233,13 @@ class TestOPMode:
 
     def test_opmode_mul_operator_callable_with_callable_stream_join(self):
         """测试*操作符（可调用模式，stream_join参数可调用）"""
+
         def condition_func(left, right):
             return left["id"] == right["id"]
-            
+
         def join_func_with_callable_param(stream_join=condition_func):
             return [{"id": 1, "info": "data1"}]
-            
+
         result = DATA * join_func_with_callable_param
         assert isinstance(result, tuple)
         assert result[0] == "left_join"
@@ -225,13 +248,14 @@ class TestOPMode:
 
     def test_opmode_pow_operator_callable_with_callable_stream_join(self):
         """测试**操作符（可调用模式，stream_join参数可调用）"""
+
         def condition_func(left, right):
             return left["id"] == right["id"]
-            
+
         def join_func_with_callable_param(stream_join=condition_func):
             return [{"id": 1, "info": "data1"}]
-            
-        result = DATA ** join_func_with_callable_param
+
+        result = DATA**join_func_with_callable_param
         assert isinstance(result, tuple)
         assert result[0] == "full_join"
         assert hasattr(result[1], "_extract_func")
@@ -239,9 +263,10 @@ class TestOPMode:
 
     def test_opmode_mul_operator_callable_with_sample_join_condition(self):
         """测试*操作符（可调用模式，stream_join参数为sample_join_condition函数）"""
+
         def join_func_with_sample_condition(stream_join=sample_join_condition):
             return [{"id": 1, "info": "data1"}]
-            
+
         result = DATA * join_func_with_sample_condition
         assert isinstance(result, tuple)
         assert result[0] == "left_join"
@@ -250,14 +275,27 @@ class TestOPMode:
 
     def test_opmode_pow_operator_callable_with_sample_join_condition(self):
         """测试**操作符（可调用模式，stream_join参数为sample_join_condition函数）"""
+
         def join_func_with_sample_condition(stream_join=sample_join_condition):
             return [{"id": 1, "info": "data1"}]
-            
-        result = DATA ** join_func_with_sample_condition
+
+        result = DATA**join_func_with_sample_condition
         assert isinstance(result, tuple)
         assert result[0] == "full_join"
         assert hasattr(result[1], "_extract_func")
         assert hasattr(result[2], "_extract_func")
+
+    def test_opmode_rshift_operator_with_stream_size(self):
+        """测试>>操作符（带stream_size参数）"""
+
+        def process_func_with_stream_size(rows,stream_size=100):
+            print(f"处理数据: {rows}")
+            return [{"processed": True}]
+
+        result = DATA >> process_func_with_stream_size
+        assert isinstance(result, tuple)
+        assert result[0] == "list"
+        assert result[1] == process_func_with_stream_size
 
 
 class TestStream:
@@ -297,10 +335,11 @@ class TestStream:
     def test_stream_or_invalid_type(self):
         """测试Stream | 操作符（无效类型）"""
         stream = Stream(sample_init_data)
+
         # 创建一个不可调用的对象来触发TypeError
         class NotCallable:
             pass
-            
+
         with pytest.raises(TypeError):
             # 传递一个不可调用的对象
             stream | NotCallable()
@@ -309,23 +348,23 @@ class TestStream:
     def test_stream_or_with_different_strategies(self):
         """测试Stream | 操作符（不同策略）"""
         stream = Stream(sample_init_data)
-        
+
         # 测试 >> 操作符
         new_stream = stream | (DATA >> sample_process_batch)
         assert isinstance(new_stream, Stream)
-        
+
         # 测试 - 操作符
         new_stream = stream | (DATA - sample_filter_func)
         assert isinstance(new_stream, Stream)
-        
+
         # 测试 + 操作符
         new_stream = stream | (DATA + sample_merge_data)
         assert isinstance(new_stream, Stream)
-        
+
         # 测试 * 操作符
         new_stream = stream | (DATA * (sample_join_condition, sample_join_data))
         assert isinstance(new_stream, Stream)
-        
+
         # 测试 ** 操作符
         new_stream = stream | (DATA ** (sample_join_condition, sample_join_data))
         assert isinstance(new_stream, Stream)
@@ -347,7 +386,7 @@ class TestStart:
         """测试Start初始化"""
         start = Start(50)
         assert start.size == 50
-        
+
         start = Start()
         assert start.size == 100
 
@@ -362,10 +401,11 @@ class TestStart:
     def test_start_or_invalid_type(self):
         """测试Start | 操作符（无效类型）"""
         start = Start()
+
         # 创建一个不可调用的对象来触发TypeError
         class NotCallable:
             pass
-            
+
         with pytest.raises(TypeError):
             # 传递一个不可调用的对象
             start | NotCallable()
@@ -391,10 +431,11 @@ class TestBuiltInCollectors:
 
     def test_set(self):
         """测试SET收集器"""
+
         def get_duplicate_data():
             # 使用可哈希的元组而不是字典
             return [(1,), (1,), (2,)]
-            
+
         start = Start()
         stream = start | get_duplicate_data | SET
         result = stream()
@@ -425,9 +466,10 @@ class TestBuiltInCollectors:
 
     def test_first_empty(self):
         """测试FIRST收集器（空数据）"""
+
         def get_empty_data():
             return []
-            
+
         start = Start()
         stream = start | get_empty_data | FIRST
         result = stream()
@@ -442,9 +484,10 @@ class TestBuiltInCollectors:
 
     def test_last_empty(self):
         """测试LAST收集器（空数据）"""
+
         def get_empty_data():
             return []
-            
+
         start = Start()
         stream = start | get_empty_data | LAST
         result = stream()
@@ -505,7 +548,7 @@ class TestIntegration:
             start
             | sample_init_data
             | (DATA > sample_process_item)
-            | (DATA ** sample_join_data_func)
+            | (DATA**sample_join_data_func)
             | LIST
         )
         result_data = result()
@@ -541,3 +584,49 @@ class TestIntegration:
         assert item2 is not None
         assert item1["info"] == "data1"
         assert item2["info"] == "data2"
+
+    def test_rshift_operator_with_stream_size_integration(self):
+        """测试>>操作符与stream_size参数的集成"""
+        start = Start()
+
+        # 创建一个带stream_size参数的处理函数
+        processed_data = []
+
+        def process_func_with_stream_size(data, stream_size=2):
+            # 记录处理的数据以便验证
+            processed_data.extend(data)
+            return [item for item in data]
+
+        result = (
+            start | sample_init_data | (DATA >> process_func_with_stream_size) | LIST
+        )
+        result_data = result()
+
+        # 验证结果
+        assert isinstance(result_data, list)
+        assert len(result_data) == 2
+        # 验证数据被处理
+        assert len(processed_data) == 2
+
+    def test_rshift_operator_without_stream_size_integration(self):
+        """测试>>操作符（无stream_size参数）"""
+        start = Start()
+
+        # 创建一个不带stream_size参数的处理函数
+        processed_data = []
+
+        def process_func_without_stream_size(data):
+            # 记录处理的数据以便验证
+            processed_data.extend(data)
+            return [item for item in data]
+
+        result = (
+            start | sample_init_data | (DATA >> process_func_without_stream_size) | LIST
+        )
+        result_data = result()
+
+        # 验证结果
+        assert isinstance(result_data, list)
+        assert len(result_data) == 2
+        # 验证数据被处理
+        assert len(processed_data) == 2

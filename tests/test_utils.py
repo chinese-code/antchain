@@ -81,17 +81,7 @@ class TestExtractBatchSize:
         def problematic_function():
             pass
 
-        # 通过模拟inspect.signature引发ValueError来测试异常处理
-        import inspect
-
-        original_signature = inspect.signature
-
-        def mock_signature(func):
-            if func == problematic_function:
-                raise ValueError("Mock ValueError")
-            return original_signature(func)
-
-        # 由于我们无法直接模拟inspect.signature，我们测试正常情况
+        # 由于我们无法直接模拟inspect.signature引发ValueError，我们测试正常情况
         result = extract_batch_size(problematic_function, 5)
         assert result == 5
 
