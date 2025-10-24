@@ -104,7 +104,7 @@ class OPMode:
         """
         if callable(other):
             # 单函数模式：函数返回数据，条件从stream_join参数获取
-            def extract_condition_data():
+            def extract_condition_data(prev_result=None):
                 # 获取函数的stream_join参数
                 condition_func = None
                 try:
@@ -118,8 +118,31 @@ class OPMode:
                 except (ValueError, TypeError):
                     pass
 
-                # 执行函数获取数据
-                data = other()
+                # 执行函数获取数据，如果函数可以接受参数则传递prev_result
+                try:
+                    # 检查函数是否可以接受参数
+                    if len(sig.parameters) > 0:
+                        # 检查是否有非默认参数
+                        has_required_params = any(
+                            param.default == inspect.Parameter.empty
+                            for param in sig.parameters.values()
+                            if param.name not in ["stream_size", "stream_join"]
+                        )
+
+                        if has_required_params and prev_result is not None:
+                            data = other(prev_result)
+                        elif not has_required_params:
+                            # 只有默认参数或特殊参数，可以不传参调用
+                            data = other()
+                        else:
+                            # 有必需参数但没有prev_result，使用无参数调用
+                            data = other()
+                    else:
+                        # 函数不接受任何参数
+                        data = other()
+                except (TypeError, ValueError):
+                    # 如果调用失败，回退到无参数调用
+                    data = other()
                 return condition_func, data
 
             # 创建包装函数来提取条件函数和数据函数
@@ -135,7 +158,7 @@ class OPMode:
 
             # 将提取函数附加到包装器上，以便策略可以访问
             condition_func_wrapper._extract_func = extract_condition_data
-            data_func_wrapper._extract_func = extract_condition_data
+            data_func_wrapper._extract_func = lambda: extract_condition_data(None)
 
             return ("left_join", condition_func_wrapper, data_func_wrapper)
         elif isinstance(other, tuple) and len(other) == 2:
@@ -164,7 +187,7 @@ class OPMode:
         """
         if callable(other):
             # 单函数模式：函数返回数据，条件从stream_join参数获取
-            def extract_condition_data():
+            def extract_condition_data(prev_result=None):
                 # 获取函数的stream_join参数
                 condition_func = None
                 try:
@@ -178,8 +201,31 @@ class OPMode:
                 except (ValueError, TypeError):
                     pass
 
-                # 执行函数获取数据
-                data = other()
+                # 执行函数获取数据，如果函数可以接受参数则传递prev_result
+                try:
+                    # 检查函数是否可以接受参数
+                    if len(sig.parameters) > 0:
+                        # 检查是否有非默认参数
+                        has_required_params = any(
+                            param.default == inspect.Parameter.empty
+                            for param in sig.parameters.values()
+                            if param.name not in ["stream_size", "stream_join"]
+                        )
+
+                        if has_required_params and prev_result is not None:
+                            data = other(prev_result)
+                        elif not has_required_params:
+                            # 只有默认参数或特殊参数，可以不传参调用
+                            data = other()
+                        else:
+                            # 有必需参数但没有prev_result，使用无参数调用
+                            data = other()
+                    else:
+                        # 函数不接受任何参数
+                        data = other()
+                except (TypeError, ValueError):
+                    # 如果调用失败，回退到无参数调用
+                    data = other()
                 return condition_func, data
 
             # 创建包装函数来提取条件函数和数据函数
@@ -195,7 +241,7 @@ class OPMode:
 
             # 将提取函数附加到包装器上，以便策略可以访问
             condition_func_wrapper._extract_func = extract_condition_data
-            data_func_wrapper._extract_func = extract_condition_data
+            data_func_wrapper._extract_func = lambda: extract_condition_data(None)
 
             return ("full_join", condition_func_wrapper, data_func_wrapper)
         elif isinstance(other, tuple) and len(other) == 2:
@@ -359,6 +405,7 @@ def collect_first(rows):
 def collect_last(rows):
     return rows[-1] if len(rows) > 0 else None
 
+
 def filter_none(row):
     return row is not None
 
@@ -378,4 +425,4 @@ FIRST = DATA >> collect_first
 # 取最后一个
 LAST = DATA >> collect_last
 # 过滤为None的数据,也就是保留不为None的数据
-NON=DATA - filter_none
+NON = DATA - filter_none

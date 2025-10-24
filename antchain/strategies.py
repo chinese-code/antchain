@@ -7,6 +7,7 @@
 
 from typing import Any, Callable, List, Tuple, Set, Dict
 from abc import ABC, abstractmethod
+import inspect
 from .utils import extract_batch_size, batch_process
 
 
@@ -42,7 +43,7 @@ class SingleItemStrategy(ProcessingStrategy):
     def process(self, prev_result: Any, *args, **kwargs) -> Any:
         """处理单条数据"""
         if isinstance(prev_result, list):
-           return [self.func(item) for item in prev_result]
+            return [self.func(item) for item in prev_result]
         else:
             return self.func(prev_result)
 
@@ -113,13 +114,23 @@ class LeftJoinStrategy(ProcessingStrategy):
         """左连接处理，支持按函数参数中的stream_size进行批处理"""
         # 检查是否是单函数模式
         if hasattr(self.condition_func, "_extract_func"):
-            # 从单函数中提取条件函数和数据
-            condition_func, right_data = self.condition_func._extract_func()
+            # 从单函数中提取条件函数和数据，传递prev_result参数
+            condition_func, right_data = self.condition_func._extract_func(prev_result)
         else:
             condition_func = self.condition_func
-            right_data = (
-                self.data_func() if callable(self.data_func) else self.data_func
-            )
+            # 如果data_func可以接受参数，则传入prev_result
+            if callable(self.data_func):
+                try:
+                    # 检查data_func是否可以接受参数
+                    sig = inspect.signature(self.data_func)
+                    if len(sig.parameters) > 0:
+                        right_data = self.data_func(prev_result)
+                    else:
+                        right_data = self.data_func()
+                except (ValueError, TypeError):
+                    right_data = self.data_func()
+            else:
+                right_data = self.data_func
 
         # 确保左右数据都是列表
         left_data = prev_result if isinstance(prev_result, list) else [prev_result]
@@ -175,13 +186,23 @@ class FullJoinStrategy(ProcessingStrategy):
         """全连接处理，支持按函数参数中的stream_size进行批处理"""
         # 检查是否是单函数模式
         if hasattr(self.condition_func, "_extract_func"):
-            # 从单函数中提取条件函数和数据
-            condition_func, right_data = self.condition_func._extract_func()
+            # 从单函数中提取条件函数和数据，传递prev_result参数
+            condition_func, right_data = self.condition_func._extract_func(prev_result)
         else:
             condition_func = self.condition_func
-            right_data = (
-                self.data_func() if callable(self.data_func) else self.data_func
-            )
+            # 如果data_func可以接受参数，则传入prev_result
+            if callable(self.data_func):
+                try:
+                    # 检查data_func是否可以接受参数
+                    sig = inspect.signature(self.data_func)
+                    if len(sig.parameters) > 0:
+                        right_data = self.data_func(prev_result)
+                    else:
+                        right_data = self.data_func()
+                except (ValueError, TypeError):
+                    right_data = self.data_func()
+            else:
+                right_data = self.data_func
 
         # 确保左右数据都是列表
         left_data = prev_result if isinstance(prev_result, list) else [prev_result]
