@@ -104,6 +104,18 @@ def create_single_function_wrappers(other: Callable) -> Tuple[Callable, Callable
                 for param in sig.parameters.values()
                 if param.name not in ["stream_size", "stream_join"]
             )
+
+            # 检查是否有stream_size参数并进行批处理
+            batch_size = extract_batch_size(other, 0)
+            if (
+                batch_size > 0
+                and isinstance(prev_result, list)
+                and len(prev_result) > batch_size
+            ):
+                # 使用batch_process函数分批处理
+                data = batch_process(prev_result, batch_size, other)
+                return condition_func, data
+
             # 检查函数是否可以接受参数
             if (
                 len(sig.parameters) > 0

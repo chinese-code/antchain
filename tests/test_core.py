@@ -288,7 +288,7 @@ class TestOPMode:
     def test_opmode_rshift_operator_with_stream_size(self):
         """测试>>操作符（带stream_size参数）"""
 
-        def process_func_with_stream_size(rows, stream_size=100):
+        def process_func_with_stream_size(rows, stream_size=10):
             print(f"处理数据: {rows}")
             return [{"processed": True}]
 
@@ -296,6 +296,31 @@ class TestOPMode:
         assert isinstance(result, tuple)
         assert result[0] == "list"
         assert result[1] == process_func_with_stream_size
+
+    def test_opmode_lshift_operator_with_stream_size(self):
+        """测试>>操作符（带stream_size参数）"""
+
+        def init():
+            data = list()
+            for i in range(0, 20):
+                data.append({"id": i, "name": f"name_{i}"})
+            return data
+
+        def process_func_with_stream_size(
+            rows, stream_size=2, stream_join=(lambda r1, r2: r1["id"] == r2["id"])
+        ):
+            print(f"处理数据: {rows}")
+            assert len(rows) == stream_size
+            return {"id": 1, "info": "stream"}
+
+        result = (
+            Start()
+            | init
+            | DATA * process_func_with_stream_size
+            | DATA - (lambda r: r["id"] == 1)
+        )()
+        print(result)
+        assert result == [{"id": 1, "name": "name_1", "info": "stream"}]
 
 
 class TestStream:

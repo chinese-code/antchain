@@ -58,7 +58,7 @@ class JoinStrategy(ProcessingStrategy, ABC):
         extract_func = self.condition_func._extract_func
         condition_func, right_data_info = extract_func(prev_result)
 
-        # 处理单函数模式下的数据函数信息
+        # 如果right_data_info不是元组，说明数据已经被处理过了，直接返回
         if not (isinstance(right_data_info, tuple) and len(right_data_info) == 3):
             # 直接使用提取的数据
             return condition_func, right_data_info
