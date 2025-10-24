@@ -5,9 +5,10 @@
 链式调用、多种数据处理模式等。
 """
 
-from typing import Any, Callable, Tuple, Union, Optional, cast
+from typing import Any, Callable, Tuple, Union, Optional
 import inspect
 from .strategies import StrategyFactory
+from .utils import create_single_function_wrappers
 
 
 class OPMode:
@@ -26,50 +27,6 @@ class OPMode:
         """
         self.mode = mode
 
-    def _extract_condition_data(self, other: Callable, prev_result=None):
-        """
-        从函数中提取条件函数和数据
-
-        Args:
-            other: 要处理的函数
-            prev_result: 上一个处理步骤的结果
-
-        Returns:
-            包含条件函数和数据的元组
-        """
-        # 获取函数的stream_join参数
-        condition_func = None
-        try:
-            sig = inspect.signature(other)
-            if "stream_join" in sig.parameters:
-                param = sig.parameters["stream_join"]
-                if param.default != inspect.Parameter.empty and callable(param.default):
-                    condition_func = param.default
-        except (ValueError, TypeError) as e:
-            raise e
-
-        # 执行函数获取数据，如果函数可以接受参数则传递prev_result
-        try:
-            # 检查是否有非默认参数
-            has_required_params = any(
-                param.default == inspect.Parameter.empty
-                for param in sig.parameters.values()
-                if param.name not in ["stream_size", "stream_join"]
-            )
-            # 检查函数是否可以接受参数
-            if (
-                len(sig.parameters) > 0
-                and has_required_params
-                and prev_result is not None
-            ):
-                data = other(prev_result)
-            else:
-                # 函数不接受任何参数
-                data = other()
-        except (TypeError, ValueError) as e:
-            raise e
-        return condition_func, data
-
     def _create_join_operation(
         self, other: Union[Tuple[Callable, Callable], Callable], operation_type: str
     ) -> Tuple[str, Callable, Callable]:
@@ -85,29 +42,9 @@ class OPMode:
         """
         if callable(other):
             # 单函数模式：函数返回数据，条件从stream_join参数获取
-            def extract_condition_data(prev_result=None):
-                return self._extract_condition_data(other, prev_result)
-
-            # 创建包装函数来提取条件函数和数据函数
-            def condition_func_wrapper(left, right):
-                # 这个函数实际上不会被直接调用，只是作为占位符
-                # 真正的条件函数会在策略中提取
-                pass
-
-            def data_func_wrapper():
-                # 这个函数实际上不会被直接调用，只是作为占位符
-                # 真正的数据会在策略中提取
-                pass
-
-            # 将提取函数附加到包装器上，以便策略可以访问
-            # 使用 cast 来告诉类型检查器这些函数有额外的属性
-            condition_func_wrapper = cast(Callable, condition_func_wrapper)
-            data_func_wrapper = cast(Callable, data_func_wrapper)
-            condition_func_wrapper._extract_func = extract_condition_data  # type: ignore
-            data_func_wrapper._extract_func = lambda: extract_condition_data(
-                None
-            )  # type: ignore
-
+            condition_func_wrapper, data_func_wrapper = create_single_function_wrappers(
+                other
+            )
             return (operation_type, condition_func_wrapper, data_func_wrapper)
         elif isinstance(other, tuple) and len(other) == 2:
             condition_func, data_func = other

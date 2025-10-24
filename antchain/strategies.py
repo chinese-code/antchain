@@ -1,10 +1,3 @@
-"""
-数据流处理策略模块
-
-该模块实现了各种数据处理模式的策略类，用于替代Stream.__or__方法中的
-多层if/elif结构，提高代码的可维护性和扩展性。
-"""
-
 from typing import Any, Callable, List, Tuple, Set, Dict
 from abc import ABC, abstractmethod
 import inspect
@@ -32,6 +25,178 @@ class ProcessingStrategy(ABC):
             处理后的结果
         """
         pass
+
+
+class JoinStrategy(ProcessingStrategy, ABC):
+    """连接策略抽象基类"""
+
+    def __init__(self, condition_func: Callable, data_func: Callable):
+        self.condition_func = condition_func
+        self.data_func = data_func
+
+    def process(self, prev_result: Any, *args, **kwargs) -> Any:
+        """连接处理的通用流程"""
+        # 检查是否是单函数模式
+        if hasattr(self.condition_func, "_extract_func"):
+            # 处理单函数模式
+            condition_func, right_data = self._process_single_function_mode(prev_result)
+        else:
+            # 处理传统模式
+            condition_func = self.condition_func
+            right_data = self._process_traditional_mode(prev_result)
+
+        # 确保左右数据都是列表
+        left_data = prev_result if isinstance(prev_result, list) else [prev_result]
+        right_data = right_data if isinstance(right_data, list) else [right_data]
+
+        # 执行具体的连接操作
+        return self._perform_join(left_data, right_data, condition_func)
+
+    def _process_single_function_mode(self, prev_result: Any) -> Tuple[Callable, Any]:
+        """处理单函数模式"""
+        # 从单函数中提取条件函数和数据函数信息，传递prev_result参数
+        extract_func = self.condition_func._extract_func
+        condition_func, right_data_info = extract_func(prev_result)
+
+        # 处理单函数模式下的数据函数信息
+        if not (isinstance(right_data_info, tuple) and len(right_data_info) == 3):
+            # 直接使用提取的数据
+            return condition_func, right_data_info
+
+        # 提取函数、签名和prev_result信息
+        real_data_func, sig, extract_prev_result = right_data_info
+
+        # 如果real_data_func不可调用，直接返回
+        if not callable(real_data_func):
+            return condition_func, real_data_func
+
+        # 检查是否有stream_size参数
+        batch_size = extract_batch_size(real_data_func, 0)
+        if (
+            batch_size > 0
+            and isinstance(prev_result, list)
+            and len(prev_result) > batch_size
+        ):
+            # 使用batch_process函数分批处理
+            right_data = batch_process(prev_result, batch_size, real_data_func)
+            return condition_func, right_data
+
+        # 检查函数是否可以接受参数
+        has_required_params = any(
+            param.default == inspect.Parameter.empty
+            for param in sig.parameters.values()
+            if param.name not in ["stream_size", "stream_join"]
+        )
+
+        # 检查函数是否可以接受参数
+        if len(sig.parameters) > 0 and has_required_params and prev_result is not None:
+            right_data = real_data_func(prev_result)
+        else:
+            # 函数不接受任何参数
+            right_data = real_data_func()
+
+        return condition_func, right_data
+
+    def _process_traditional_mode(self, prev_result: Any) -> Any:
+        """处理传统模式"""
+        # 如果data_func不可调用，直接返回
+        if not callable(self.data_func):
+            return self.data_func
+
+        # 检查data_func是否可以接受参数
+        sig = inspect.signature(self.data_func)
+        if len(sig.parameters) == 0:
+            return self.data_func()
+
+        # 检查是否有stream_size参数
+        batch_size = extract_batch_size(self.data_func, 0)
+        if (
+            batch_size > 0
+            and isinstance(prev_result, list)
+            and len(prev_result) > batch_size
+        ):
+            # 使用batch_process函数分批处理
+            return batch_process(prev_result, batch_size, self.data_func)
+
+        # 检查函数是否可以接受参数
+        has_required_params = any(
+            param.default == inspect.Parameter.empty
+            for param in sig.parameters.values()
+            if param.name not in ["stream_size", "stream_join"]
+        )
+
+        # 检查函数是否可以接受参数
+        if len(sig.parameters) > 0 and has_required_params and prev_result is not None:
+            return self.data_func(prev_result)
+        else:
+            # 函数不接受任何参数
+            return self.data_func()
+
+    @abstractmethod
+    def _perform_join(
+        self, left_data: List[Any], right_data: List[Any], condition_func: Callable
+    ) -> List[Any]:
+        """执行具体的连接操作"""
+        pass
+
+
+class LeftJoinStrategy(JoinStrategy):
+    """左连接数据处理策略 (*)"""
+
+    def _perform_join(
+        self, left_data: List[Any], right_data: List[Any], condition_func: Callable
+    ) -> List[Any]:
+        """执行左连接操作"""
+        result = []
+        for left_item in left_data:
+            matched = False
+            for right_item in right_data:
+                # 只有当condition_func不为None时才使用它进行匹配
+                if condition_func is None or condition_func(left_item, right_item):
+                    # 合并两个字典
+                    merged = {**left_item}
+                    merged.update(right_item)
+                    result.append(merged)
+                    matched = True
+                    break  # 左连接只取第一个匹配项
+            if not matched:
+                result.append(left_item)  # 没有匹配项时保留左侧数据
+        return result
+
+
+class FullJoinStrategy(JoinStrategy):
+    """全连接数据处理策略 (**)"""
+
+    def _perform_join(
+        self, left_data: List[Any], right_data: List[Any], condition_func: Callable
+    ) -> List[Any]:
+        """执行全连接操作"""
+        # 执行全连接
+        result = []
+        matched_right: Set[int] = set()  # 记录右侧已匹配的项的索引
+
+        # 处理左侧数据
+        for left_item in left_data:
+            matched = False
+            for i, right_item in enumerate(right_data):
+                # 只有当condition_func不为None时才使用它进行匹配
+                if condition_func is None or condition_func(left_item, right_item):
+                    # 合并两个字典
+                    merged = {**left_item}
+                    merged.update(right_item)
+                    result.append(merged)
+                    matched = True
+                    matched_right.add(i)  # 记录已匹配的右侧项
+                    break  # 一个左侧项只匹配一个右侧项
+            if not matched:
+                result.append(left_item)  # 没有匹配项时保留左侧数据
+
+        # 添加右侧未匹配的数据
+        for i, right_item in enumerate(right_data):
+            if i not in matched_right:
+                result.append(right_item)
+
+        return result
 
 
 class SingleItemStrategy(ProcessingStrategy):
@@ -101,161 +266,6 @@ class MergeStrategy(ProcessingStrategy):
             return [prev_result] + new_data
         else:
             return [prev_result, new_data]
-
-
-class LeftJoinStrategy(ProcessingStrategy):
-    """左连接数据处理策略 (*)"""
-
-    def __init__(self, condition_func: Callable, data_func: Callable):
-        self.condition_func = condition_func
-        self.data_func = data_func
-
-    def process(self, prev_result: Any, *args, **kwargs) -> Any:
-        """左连接处理，支持按函数参数中的stream_size进行批处理"""
-        # 检查是否是单函数模式
-        if hasattr(self.condition_func, "_extract_func"):
-            # 从单函数中提取条件函数和数据，传递prev_result参数
-            condition_func, right_data = self.condition_func._extract_func(prev_result)
-        else:
-            condition_func = self.condition_func
-            # 如果data_func可以接受参数，则传入prev_result
-            if callable(self.data_func):
-                try:
-                    # 检查data_func是否可以接受参数
-                    sig = inspect.signature(self.data_func)
-                    if len(sig.parameters) > 0:
-                        right_data = self.data_func(prev_result)
-                    else:
-                        right_data = self.data_func()
-                except (ValueError, TypeError) as e:
-                    raise e
-            else:
-                right_data = self.data_func
-
-        # 确保左右数据都是列表
-        left_data = prev_result if isinstance(prev_result, list) else [prev_result]
-        right_data = right_data if isinstance(right_data, list) else [right_data]
-
-        # 从函数参数中提取批处理大小，默认为0（全量处理）
-        batch_size = extract_batch_size(self.data_func, 0)
-
-        if batch_size > 0 and len(left_data) > batch_size:
-            # 需要分批处理
-            result = []
-            for i in range(0, len(left_data), batch_size):
-                batch_left = left_data[i : i + batch_size]
-                # 对每个批次执行左连接
-                batch_result = self._perform_left_join(
-                    batch_left, right_data, condition_func
-                )
-                result.extend(batch_result)
-            return result
-        else:
-            # 全量处理
-            return self._perform_left_join(left_data, right_data, condition_func)
-
-    def _perform_left_join(
-        self, left_data: List[Any], right_data: List[Any], condition_func: Callable
-    ) -> List[Any]:
-        """执行左连接操作"""
-        result = []
-        for left_item in left_data:
-            matched = False
-            for right_item in right_data:
-                # 只有当condition_func不为None时才使用它进行匹配
-                if condition_func is None or condition_func(left_item, right_item):
-                    # 合并两个字典
-                    merged = {**left_item}
-                    merged.update(right_item)
-                    result.append(merged)
-                    matched = True
-                    break  # 左连接只取第一个匹配项
-            if not matched:
-                result.append(left_item)  # 没有匹配项时保留左侧数据
-        return result
-
-
-class FullJoinStrategy(ProcessingStrategy):
-    """全连接数据处理策略 (**)"""
-
-    def __init__(self, condition_func: Callable, data_func: Callable):
-        self.condition_func = condition_func
-        self.data_func = data_func
-
-    def process(self, prev_result: Any, *args, **kwargs) -> Any:
-        """全连接处理，支持按函数参数中的stream_size进行批处理"""
-        # 检查是否是单函数模式
-        if hasattr(self.condition_func, "_extract_func"):
-            # 从单函数中提取条件函数和数据，传递prev_result参数
-            condition_func, right_data = self.condition_func._extract_func(prev_result)
-        else:
-            condition_func = self.condition_func
-            # 如果data_func可以接受参数，则传入prev_result
-            if callable(self.data_func):
-                try:
-                    # 检查data_func是否可以接受参数
-                    sig = inspect.signature(self.data_func)
-                    if len(sig.parameters) > 0:
-                        right_data = self.data_func(prev_result)
-                    else:
-                        right_data = self.data_func()
-                except (ValueError, TypeError) as e:
-                    raise e
-            else:
-                right_data = self.data_func
-
-        # 确保左右数据都是列表
-        left_data = prev_result if isinstance(prev_result, list) else [prev_result]
-        right_data = right_data if isinstance(right_data, list) else [right_data]
-
-        # 从函数参数中提取批处理大小，默认为0（全量处理）
-        batch_size = extract_batch_size(self.data_func, 0)
-
-        if batch_size > 0 and len(left_data) > batch_size:
-            # 需要分批处理
-            result = []
-            for i in range(0, len(left_data), batch_size):
-                batch_left = left_data[i : i + batch_size]
-                # 对每个批次执行全连接
-                batch_result = self._perform_full_join(
-                    batch_left, right_data, condition_func
-                )
-                result.extend(batch_result)
-            return result
-        else:
-            # 全量处理
-            return self._perform_full_join(left_data, right_data, condition_func)
-
-    def _perform_full_join(
-        self, left_data: List[Any], right_data: List[Any], condition_func: Callable
-    ) -> List[Any]:
-        """执行全连接操作"""
-        # 执行全连接
-        result = []
-        matched_right: Set[int] = set()  # 记录右侧已匹配的项的索引
-
-        # 处理左侧数据
-        for left_item in left_data:
-            matched = False
-            for i, right_item in enumerate(right_data):
-                # 只有当condition_func不为None时才使用它进行匹配
-                if condition_func is None or condition_func(left_item, right_item):
-                    # 合并两个字典
-                    merged = {**left_item}
-                    merged.update(right_item)
-                    result.append(merged)
-                    matched = True
-                    matched_right.add(i)  # 记录已匹配的右侧项
-                    break  # 一个左侧项只匹配一个右侧项
-            if not matched:
-                result.append(left_item)  # 没有匹配项时保留左侧数据
-
-        # 添加右侧未匹配的数据
-        for i, right_item in enumerate(right_data):
-            if i not in matched_right:
-                result.append(right_item)
-
-        return result
 
 
 class StrategyFactory:
