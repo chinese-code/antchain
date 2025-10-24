@@ -20,9 +20,9 @@ Name                     Stmts   Miss  Cover   Missing
 antchain/__init__.py         4      0   100%
 antchain/core.py            82      1    99%   315
 antchain/strategies.py     137     17    88%   27, 67-98, 104, 130, 140, 319
-antchain/utils.py           54      9    83%   22, 37-39, 95-97, 117-119, 126, 131
+antchain/utils.py           58      9    84%   22, 37-39, 95-97, 129-131, 138, 143
 ------------------------------------------------------
-TOTAL                      277     27    90%
+TOTAL                      281     27    90%
 ```
 
 ## 安装
