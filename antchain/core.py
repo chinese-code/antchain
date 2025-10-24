@@ -5,7 +5,7 @@
 链式调用、多种数据处理模式等。
 """
 
-from typing import Any, Callable, Tuple, Union, Optional
+from typing import Any, Callable, Tuple, Union, Optional, cast
 import inspect
 from .strategies import StrategyFactory
 
@@ -100,8 +100,13 @@ class OPMode:
                 pass
 
             # 将提取函数附加到包装器上，以便策略可以访问
-            condition_func_wrapper._extract_func = extract_condition_data
-            data_func_wrapper._extract_func = lambda: extract_condition_data(None)
+            # 使用 cast 来告诉类型检查器这些函数有额外的属性
+            condition_func_wrapper = cast(Callable, condition_func_wrapper)
+            data_func_wrapper = cast(Callable, data_func_wrapper)
+            condition_func_wrapper._extract_func = extract_condition_data  # type: ignore
+            data_func_wrapper._extract_func = lambda: extract_condition_data(
+                None
+            )  # type: ignore
 
             return (operation_type, condition_func_wrapper, data_func_wrapper)
         elif isinstance(other, tuple) and len(other) == 2:
@@ -110,11 +115,13 @@ class OPMode:
         else:
             if operation_type == "left_join":
                 raise TypeError(
-                    "左连接操作需要提供条件函数和数据函数: DATA * (condition_func, data_func) 或 DATA * func"
+                    "左连接操作需要提供条件函数和数据函数: DATA * (condition_func, data_func) 或 "
+                    "DATA * func"
                 )
             else:
                 raise TypeError(
-                    "全连接操作需要提供条件函数和数据函数: DATA ** (condition_func, data_func) 或 DATA ** func"
+                    "全连接操作需要提供条件函数和数据函数: DATA ** (condition_func, data_func) 或 "
+                    "DATA ** func"
                 )
 
     def __gt__(self, func: Callable) -> Tuple[str, Callable]:

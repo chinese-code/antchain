@@ -19,7 +19,6 @@
 - NON: 用于过滤数据,返回非None数据
 - COUNT: 统计数量
 
-
 使用示例：
     from stream import DATA, StreamStart
 
@@ -36,8 +35,19 @@
     result = stream_start | init | (DATA > process_item) | (DATA - filter_item)
 """
 
-from .core import Start, DATA, PEEK, LIST, SET, COUNT, TUPLE, FIRST, LAST,NON
+from .core import Start, DATA, PEEK, LIST, SET, COUNT, TUPLE, FIRST, LAST, NON
 
-__all__ = ["Start", "DATA", "PEEK", "LIST", "SET", "COUNT", "TUPLE", "FIRST", "LAST","NON"]
+__all__ = [
+    "Start",
+    "DATA",
+    "PEEK",
+    "LIST",
+    "SET",
+    "COUNT",
+    "TUPLE",
+    "FIRST",
+    "LAST",
+    "NON",
+]
 __version__ = "0.0.1"
 __author__ = "Developer"
