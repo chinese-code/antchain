@@ -72,6 +72,122 @@ def collect_tuple(rows: Any) -> tuple:
         return (rows,)
 
 
+def collect_first(rows: Any) -> Any:
+    """
+    获取第一个数据
+
+    Args:
+        rows (Any): 数据列表
+
+    Returns:
+        Any: 第一个数据，如果列表为空则返回None
+    """
+    if isinstance(rows, (list, tuple)) and len(rows) > 0:
+        return rows[0]
+    elif isinstance(rows, (list, tuple)) and len(rows) == 0:
+        return None
+    elif rows is not None:
+        return rows
+    else:
+        return None
+
+
+def collect_last(rows: Any) -> Any:
+    """
+    获取最后一个数据
+
+    Args:
+        rows (Any): 数据列表
+
+    Returns:
+        Any: 最后一个数据，如果列表为空则返回None
+    """
+    if isinstance(rows, (list, tuple)) and len(rows) > 0:
+        return rows[-1]
+    elif isinstance(rows, (list, tuple)) and len(rows) == 0:
+        return None
+    elif rows is not None:
+        return rows
+    else:
+        return None
+
+
+def collect_max(rows: Any) -> Any:
+    """
+    获取数据中的最大值
+
+    Args:
+        rows (Any): 数据列表
+
+    Returns:
+        Any: 最大值，如果列表为空则返回None
+    """
+    if isinstance(rows, (list, tuple)) and len(rows) > 0:
+        return max(rows)
+    elif isinstance(rows, (list, tuple)) and len(rows) == 0:
+        return None
+    elif rows is not None:
+        return rows
+    else:
+        return None
+
+
+def collect_min(rows: Any) -> Any:
+    """
+    获取数据中的最小值
+
+    Args:
+        rows (Any): 数据列表
+
+    Returns:
+        Any: 最小值，如果列表为空则返回None
+    """
+    if isinstance(rows, (list, tuple)) and len(rows) > 0:
+        return min(rows)
+    elif isinstance(rows, (list, tuple)) and len(rows) == 0:
+        return None
+    elif rows is not None:
+        return rows
+    else:
+        return None
+
+
+def collect_sum(rows: Any) -> Union[int, float]:
+    """
+    计算数据的总和
+
+    Args:
+        rows (Any): 数字列表
+
+    Returns:
+        Any: 总和，如果列表为空则返回0
+    """
+    if isinstance(rows, (list, tuple)) and len(rows) > 0:
+        return sum(rows)
+    elif isinstance(rows, (int, float)):
+        return rows
+    else:
+        return 0
+
+
+def collect_avg(rows: Any) -> float:
+    """
+    计算数据的平均值
+
+    Args:
+        rows (Any): 数字列表
+
+    Returns:
+        float: 平均值，如果列表为空则返回0
+    """
+    if isinstance(rows, (list, tuple)) and len(rows) > 0:
+        return sum(rows) / len(rows)
+    elif isinstance(rows, (int, float)):
+        return float(rows)
+    else:
+        return 0.0
+
+
 class Stream:
     """
     数据流核心类
@@ -103,9 +219,15 @@ class Stream:
         Returns:
             Stream: 新的Stream实例
         """
-        stream = Stream("next", element=other)
-        self.child_nodes.append(stream)
-        return self
+        # 创建新的Stream对象，而不是修改当前对象
+        new_stream = Stream(self.mode, self.element)
+        # 复制现有的child_nodes
+        new_stream.child_nodes = self.child_nodes.copy()
+        # 创建下一个处理步骤的Stream对象
+        next_stream = Stream("next", other)
+        # 将下一个处理步骤添加到新Stream的child_nodes中
+        new_stream.child_nodes.append(next_stream)
+        return new_stream
 
     def __call__(self, *args: Any, **kwds: Any) -> Any:
         """
@@ -212,5 +334,17 @@ SET = DATA >> collect_set
 COUNT = DATA >> collect_count
 # 转成为元组
 TUPLE = DATA >> collect_tuple
+# 取第一个
+FIRST = DATA >> collect_first
+# 取最后一个
+LAST = DATA >> collect_last
 # 过滤为None的数据,也就是保留不为None的数据
 NON = DATA - filter_none
+# 获取最大值
+MAX = DATA >> collect_max
+# 获取最小值
+MIN = DATA >> collect_min
+# 求和
+SUM = DATA >> collect_sum
+# 求平均值
+AVG = DATA >> collect_avg

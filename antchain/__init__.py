@@ -60,7 +60,13 @@ from .stream import (
     SET,
     COUNT,
     TUPLE,
+    FIRST,
+    LAST,
     NON,
+    MAX,
+    MIN,
+    SUM,
+    AVG,
 )
 
 __all__ = [
@@ -71,7 +77,13 @@ __all__ = [
     "SET",
     "COUNT",
     "TUPLE",
+    "FIRST",
+    "LAST",
     "NON",
+    "MAX",
+    "MIN",
+    "SUM",
+    "AVG",
 ]
 __version__ = "0.0.7"
 __author__ = "tumingjian@foxmail.com"
