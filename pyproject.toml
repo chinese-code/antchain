@@ -24,10 +24,10 @@ classifiers = [
 keywords = ["data-processing", "functional-programming", "stream-processing", "pipeline"]
 
 [project.urls]
-Homepage = "https://github.com/tumingjian/ant-chain"
-Repository = "https://github.com/tumingjian/ant-chain"
-Documentation = "https://github.com/tumingjian/ant-chain#readme"
-"Bug Tracker" = "https://github.com/tumingjian/ant-chain/issues"
+Homepage = "https://github.com/chinese-code/ant-chain"
+Repository = "https://github.com/chinese-code/ant-chain"
+Documentation = "https://github.com/chinese-code/ant-chain#readme"
+"Bug Tracker" = "https://github.com/chinese-code/ant-chain/issues"
 
 [project.optional-dependencies]
 dev = [
