@@ -1,5 +1,6 @@
+import random
+from antchain import Start, DATA
 
-from antchain import Start,DATA
 
 def init():
     print("这是一个函数")
@@ -14,6 +15,11 @@ def init():
         {"id": 8, "name": "张三"},
         {"id": 9, "name": "张三"},
     ]
+
+
+def add_age(row):
+    row["age"] = random.randint(10, 30)
+    return row
 
 
 def user_detail(rows, stream_size=1):
@@ -41,19 +47,15 @@ def each(row):
     return row
 
 
-def show(rows):
+def show(rows, stream_size=3):
     print(rows)
     return rows
 
 
 start = Start()
 
-chain = (
-    start
-    | init
-    | (DATA & user_detail) * left_join_user
-    | (DATA > each)
-    | (DATA >> show)
-)
+chain = start | init | (DATA > add_age) | (DATA >> show)
 
 dt = chain()
+
+print(dt)

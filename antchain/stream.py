@@ -1,45 +1,9 @@
 from typing import Any, Callable
-from strategy import StrategyFactory
+from .strategy import StrategyFactory
+from .element import Element
 
 
-class Element:
 
-    def __init__(
-        self,
-        element_type: str = "none",
-        left_data=None,
-        right_func: Callable | None = None,
-        join_func: Callable | None = None,
-    ):
-        self.left_data: None | list | tuple | Any = None
-        self.element_type = element_type
-        self.right_func = right_func
-        self.join_func = join_func
-
-    def __and__(self, other: Callable):
-        return Element(element_type="and", right_func=other)
-
-    def __add__(self, other: Callable):
-        return Element(element_type="merge", right_func=other)
-
-    def __sub__(self, other):
-        return Element(element_type="filter", right_func=other)
-
-    def __mul__(self, other):
-        self.element_type = "left_join"
-        self.join_func = other
-        return self
-
-    def __pow__(self, other):
-        self.element_type = "all_join"
-        self.join_func = other
-        return self
-
-    def __gt__(self, other):
-        return Element(element_type="one", right_func=other)
-
-    def __rshift__(self, other):
-        return Element(element_type="multi", right_func=other)
 
 
 class Stream:

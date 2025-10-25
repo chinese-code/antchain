@@ -1,5 +1,6 @@
 from typing import Any, Callable
-from stream import Element
+from .element import Element
+from .utils import batch_process_data
 
 
 class StrategyFactory:
@@ -11,10 +12,10 @@ class StrategyFactory:
         if not hasattr(self, "_initialized"):
             # 你的初始化代码（如加载配置、创建资源等）
             self._initialized = True  # 标记已初始化
-        else:
             self.processor: dict[str, Callable] = dict()
-            self.processor["one_process"] = self.one
-            self.processor["multi_process"] = self.multi
+            self.processor["one"] = self.one
+            self.processor["init"] = self.init
+            self.processor["multi"] = self.multi
             self.processor["left_join"] = self.left_join
             self.processor["all_join"] = self.all_join
             self.processor["filter"] = self.filter
@@ -41,9 +42,12 @@ class StrategyFactory:
                 raise TypeError("不支持的element_type:" + element.element_type)
             return processor(element)
 
+    def init(self, element: Element):
+        if element.right_func is None:
+            raise ValueError("right_func 不能为空")
+        return element.right_func()
+
     def one(self, element: Element) -> Any:
-        if element.element_type != "one_process":
-            raise ValueError("不支持的类型")
         if element.right_func is None:
             raise ValueError("right_func 不能为空")
         if element.left_data is None:
@@ -54,14 +58,12 @@ class StrategyFactory:
             return [element.right_func(element.left_data)]
 
     def multi(self, element: Element) -> Any:
-        if element.element_type != "multi_process":
-            raise ValueError("不支持的类型")
         if element.right_func is None:
             raise ValueError("right_func 不能为空")
         if element.left_data is None:
             return [element.right_func(None)]
         if isinstance(element.left_data, list) or isinstance(element.left_data, tuple):
-            return [element.right_func(item) for item in element.left_data]
+            return batch_process_data(element.left_data, element.right_func)
         else:
             return [element.right_func(element.left_data)]
 
@@ -75,4 +77,13 @@ class StrategyFactory:
         pass
 
     def filter(self, element: Element):
-        pass
+        if element.right_func is None:
+            raise ValueError("right_func 不能为空")
+        if element.left_data is None:
+            return [element.right_func(None)]
+        if isinstance(element.left_data, list) or isinstance(element.left_data, tuple):
+            result = list()
+            for data in element.left_data:
+                if element.right_func(data):
+                    result.append(data)
+        return result
