@@ -1,5 +1,5 @@
 [project]
-name = "ant-chain"
+name = "antchain"
 version = "0.0.7"
 description = "一个函数式编程风格的数据处理管道库，支持链式调用和多种数据处理操作"
 authors = [
