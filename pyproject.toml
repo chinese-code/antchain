@@ -1,0 +1,16 @@
+[project]
+name = "ant-chain"
+version = "0.0.7"
+description = "一个项目"
+authors = [
+    {name = "涂铭鉴",email = "tumingjian@qq.com"}
+]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
