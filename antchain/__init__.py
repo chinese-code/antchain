@@ -18,9 +18,16 @@
 - LAST: 获取结果中的最后一个元素
 - NON: 用于过滤数据,返回非None数据
 - COUNT: 统计数量
+- MAX: 获取最大值
+- MIN: 获取最小值
+- SUM: 计算总和
+- AVG: 计算平均值
+- UNIQUE: 获取唯一值列表
+- SORT: 排序
+- REVERSE: 反转
 
 使用示例：
-    from stream import DATA, StreamStart
+    from antchain import DATA, Start
 
     def init():
         return [{"id": 1}, {"id": 2}]
@@ -31,11 +38,30 @@
     def filter_item(item):
         return item["id"] % 2 == 0
 
-    stream_start = StreamStart()
+    stream_start = Start()
     result = stream_start | init | (DATA > process_item) | (DATA - filter_item)
+
+异常处理：
+该库定义了以下异常类型：
+- AntChainError: 基础异常类
+- ElementError: Element相关的异常
+- StrategyError: Strategy相关的异常
+- ProcessingError: 数据处理过程中的异常
+- ValidationError: 参数验证相关的异常
+- JoinError: 连接操作相关的异常
+- BatchProcessError: 批处理相关的异常
 """
 
-from .stream import Start, DATA, PEEK, LIST, SET, COUNT, TUPLE, FIRST, LAST, NON
+from .stream import (
+    Start,
+    DATA,
+    PEEK,
+    LIST,
+    SET,
+    COUNT,
+    TUPLE,
+    NON,
+)
 
 __all__ = [
     "Start",
@@ -45,8 +71,6 @@ __all__ = [
     "SET",
     "COUNT",
     "TUPLE",
-    "FIRST",
-    "LAST",
     "NON",
 ]
 __version__ = "0.0.7"

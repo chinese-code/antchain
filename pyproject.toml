@@ -1,16 +1,93 @@
 [project]
 name = "ant-chain"
 version = "0.0.7"
-description = "一个项目"
+description = "一个函数式编程风格的数据处理管道库，支持链式调用和多种数据处理操作"
 authors = [
-    {name = "涂铭鉴",email = "tumingjian@qq.com"}
+    {name = "涂铭鉴", email = "tumingjian@qq.com"}
 ]
 readme = "README.md"
+license = {text = "MIT"}
 requires-python = ">=3.10"
 dependencies = [
 ]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Utilities"
+]
+keywords = ["data-processing", "functional-programming", "stream-processing", "pipeline"]
 
+[project.urls]
+Homepage = "https://github.com/tumingjian/ant-chain"
+Repository = "https://github.com/tumingjian/ant-chain"
+Documentation = "https://github.com/tumingjian/ant-chain#readme"
+"Bug Tracker" = "https://github.com/tumingjian/ant-chain/issues"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "mypy>=1.0.0",
+    "flake8>=6.0.0",
+    "black>=23.0.0",
+    "isort>=5.0.0"
+]
+test = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0"
+]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "ant-chain"
+version = "0.0.7"
+description = "一个函数式编程风格的数据处理管道库，支持链式调用和多种数据处理操作"
+authors = ["涂铭鉴 <tumingjian@qq.com>"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "--cov=antchain --cov-report=term-missing --cov-report=html"
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+
+[tool.black]
+line-length = 88
+target-version = ['py310']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
