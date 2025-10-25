@@ -1,5 +1,5 @@
 from typing import Callable, Any
-from .utils import get_function_args_count
+from .utils import get_function_args_count, get_function_return_type
 
 
 class Element:
@@ -23,6 +23,12 @@ class Element:
         return Element(element_type="merge", right_func=other)
 
     def __sub__(self, other):
+        args_count = get_function_args_count(other)
+        if args_count > 1:
+            raise ValueError("> %s,函数最多只能有一个参数".format(other.__name__))
+        return_type = get_function_return_type(other)
+        if return_type != bool and return_type != None:
+            raise ValueError("> %s,函数的返回值类型必须是bool".format(other.__name__))
         return Element(element_type="filter", right_func=other)
 
     def __mul__(self, other):
