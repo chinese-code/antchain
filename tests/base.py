@@ -5,7 +5,6 @@ from antchain.stream import NON
 
 
 def init():
-    print("这是一个函数")
     return [
         {"id": 1, "name": "张三"},
         {"id": 2, "name": "张三"},
@@ -25,7 +24,6 @@ def add_age(row):
 
 
 def user_detail(rows, stream_size=1):
-    print("这是一个函数")
     return [
         {"id": 1, "nick": "张三"},
         {"id": 2, "nick": "张三"},
@@ -80,7 +78,7 @@ def right_data(rows, stream_size=3):
 def left_join(
     left_key=lambda x: x["id"],
     right_key=lambda x: x["user_id"],
-    left_property='address',
+    left_property="address",
     one_to_many=False,
 ):
     """
@@ -97,19 +95,36 @@ def left_join(
 
 start = Start()
 
-chain = (
+chain1 = (
     start
     | init
-    | (DATA > add_age)
-    | (DATA >> show)
-    | (DATA - id_filter)
-    | (DATA + add_user)
-    | (DATA + add_one_user)
-    | (DATA + add_none)
-    | NON
-    | (DATA & right_data) * left_join
+    | (DATA > add_age)  # 添加年龄
+    | (DATA - id_filter)  # 过滤id为1的数据
+    | (DATA + add_user)  # 添加多个用户
+    | (DATA + add_one_user)  # 添加一个用户
+    | (DATA + add_none)  # 添加一个空数据
+    | NON  # 过滤掉None数据
+    | (DATA & right_data) * left_join  # 左外连接
 )
 
-dt = chain()
 
+def init2():
+    return [{"id": 4, "email": "tumingjian@163.com"}]
+
+
+def chain1_eft_join(
+    left_key=lambda x: x["id"],
+    right_key=lambda x: x["id"],
+    left_property=None,
+    one_to_many=False,
+):
+    pass
+
+
+print("chain2 ----start")
+# 串联chian1,实际可以一直串联下去
+chain = start | init2 | (DATA & chain1) * chain1_eft_join
+
+dt = chain()
 print(dt)
+print("chain2 ----end")
